@@ -8,7 +8,6 @@ from django.utils.timezone import localtime
 from django.core.exceptions import ObjectDoesNotExist
 
 
-
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
     'https://vignette.wikia.nocookie.net/pokemon/images/6/6e/%21.png/revision'
@@ -58,7 +57,7 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     pokemons = Pokemon.objects.all()
-    
+
     for pokemon in pokemons:
         if pokemon.id == int(pokemon_id):
             requested_pokemon = pokemon
@@ -74,7 +73,7 @@ def show_pokemon(request, pokemon_id):
         "img_url": request.build_absolute_uri(requested_pokemon.photo.url),
         "description": requested_pokemon.description,
         "previous_evolution": requested_pokemon.previous_evolution
-        }
+    }
 
     if requested_pokemon.previous_evolution:
         pokemon_info["previous_evolution"] = {
@@ -94,8 +93,6 @@ def show_pokemon(request, pokemon_id):
     except ObjectDoesNotExist:
         pass
 
-    
-
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for pokemon_entity in requested_pokemon.entities.all():
         add_pokemon(
@@ -103,7 +100,6 @@ def show_pokemon(request, pokemon_id):
             pokemon_entity.lon,
             request.build_absolute_uri(pokemon_entity.pokemon.photo.url)
         )
-
 
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(), 'pokemon': pokemon_info
