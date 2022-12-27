@@ -5,6 +5,7 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from .models import Pokemon, PokemonEntity
 from django.utils.timezone import localtime
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -58,7 +59,6 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     pokemons = Pokemon.objects.all()
     
-    
     for pokemon in pokemons:
         if pokemon.id == int(pokemon_id):
             requested_pokemon = pokemon
@@ -66,16 +66,33 @@ def show_pokemon(request, pokemon_id):
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
 
-
     pokemon_info = {
         "pokemon_id": requested_pokemon.id,
         "title_ru": requested_pokemon.title_ru,
         "title_en": requested_pokemon.title_en,
         "title_jp": requested_pokemon.title_jp,
         "img_url": request.build_absolute_uri(requested_pokemon.photo.url),
-        "description": requested_pokemon.description
+        "description": requested_pokemon.description,
+        "previous_evolution": requested_pokemon.previous_evolution
+        }
 
-    }
+    if requested_pokemon.previous_evolution:
+        pokemon_info["previous_evolution"] = {
+            "title_ru": requested_pokemon.previous_evolution.title_ru,
+            "pokemon_id": requested_pokemon.previous_evolution.id,
+            "img_url": request.build_absolute_uri(requested_pokemon.previous_evolution.photo.url)
+        }
+
+    try:
+        next_evolution = requested_pokemon.next_evolution.get()
+        if next_evolution:
+            pokemon_info["next_evolution"] = {
+                "title_ru": next_evolution.title_ru,
+                "pokemon_id": next_evolution.id,
+                "img_url": request.build_absolute_uri(next_evolution.photo.url)
+            }
+    except ObjectDoesNotExist:
+        pass
 
     
 
