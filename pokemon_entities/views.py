@@ -3,7 +3,7 @@ import json
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from .models import Pokemon, PokemonEntity
+from .models import Pokemon, PokemonEntity, PokemonElement
 from django.utils.timezone import localtime
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -16,16 +16,17 @@ DEFAULT_IMAGE_URL = (
 )
 
 
-def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
+def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL, html=None):
     icon = folium.features.CustomIcon(
         image_url,
         icon_size=(50, 50),
     )
+    iframe = folium.IFrame(html=html, width=500, height=300)
+    popup = folium.Popup(iframe, max_width=2650)
     folium.Marker(
         [lat, lon],
-        # Warning! `tooltip` attribute is disabled intentionally
-        # to fix strange folium cyrillic encoding bug
         icon=icon,
+        popup=popup
     ).add_to(folium_map)
 
 
@@ -34,10 +35,44 @@ def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for pokemon_location in pokemon_locations:
         if pokemon_location.appeared_at <= localtime() <= pokemon_location.disappeared_at:
+            html = (f"""
+            <table>
+<thead>
+<tr>
+<th>Что за покемон</th>
+<th>{pokemon_location.pokemon.title_ru}</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td>Начало спауна</td><td>{pokemon_location.appeared_at}</td></tr>
+<tr>
+<td>Конец спауна</td><td>{pokemon_location.disappeared_at}</td></tr>
+<tr>
+<td>Уровень</td><td>{pokemon_location.level}</td></tr>
+<tr>
+<td>Здоровье</td><td>{pokemon_location.health}</td></tr>
+<tr>
+<td>Сила</td><td>{pokemon_location.strenght}</td></tr>
+<tr>
+<td>Защита</td><td>{pokemon_location.defence}</td></tr>
+<tr>
+<td>Выносливость</td><td>{pokemon_location.stamina}</td></tr>
+</tbody>
+</tr>
+</table>
+""")
             add_pokemon(
                 folium_map, pokemon_location.lat,
                 pokemon_location.lon,
-                request.build_absolute_uri(pokemon_location.pokemon.photo.url)
+                request.build_absolute_uri(pokemon_location.pokemon.photo.url),
+                html
             )
 
     pokemons_on_page = []
@@ -57,6 +92,7 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     pokemons = Pokemon.objects.all()
+    element_types = []
 
     for pokemon in pokemons:
         if pokemon.id == int(pokemon_id):
@@ -72,7 +108,8 @@ def show_pokemon(request, pokemon_id):
         "title_jp": requested_pokemon.title_jp,
         "img_url": request.build_absolute_uri(requested_pokemon.photo.url),
         "description": requested_pokemon.description,
-        "previous_evolution": requested_pokemon.previous_evolution
+        "previous_evolution": requested_pokemon.previous_evolution,
+        "element_type": element_types
     }
 
     if requested_pokemon.previous_evolution:
@@ -81,9 +118,20 @@ def show_pokemon(request, pokemon_id):
             "pokemon_id": requested_pokemon.previous_evolution.id,
             "img_url": request.build_absolute_uri(requested_pokemon.previous_evolution.photo.url)
         }
+    if pokemon.elements.all():
+        for element_type in pokemon.elements.all():
+            strong_types = []
+            for strong in element_type.strong_against_type.all():
+                strong_types.append(strong)
+
+            element_types.append({
+            'title': element_type.title,
+            'img': element_type.icon.url,
+            'strong_against': strong_types
+            })
 
     try:
-        next_evolution = requested_pokemon.next_evolution.get()
+        next_evolution = requested_pokemon.next_evolutions.get()
         if next_evolution:
             pokemon_info["next_evolution"] = {
                 "title_ru": next_evolution.title_ru,
