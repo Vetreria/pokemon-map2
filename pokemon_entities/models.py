@@ -10,8 +10,6 @@ class PokemonElement(models.Model):
                                                  related_name="strong_againsts", null=True, blank=True, verbose_name="Силён против")
 
     def __str__(self):
-        if self.title:
-            return self.title
         return self.title
 
 
