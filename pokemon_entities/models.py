@@ -2,14 +2,12 @@ from django.db import models  # noqa F401
 
 
 class PokemonElement(models.Model):
-    # pokemon = models.ManyToManyField(Pokemon,
-    #                             related_name="elements", null=True, verbose_name="Покемон")
     icon = models.ImageField(
         upload_to='images', null=True, blank=True, verbose_name="Иконка")
     title = models.CharField(
         max_length=200, blank=True, verbose_name="Название по-русски")
     strong_against_type = models.ManyToManyField("self",
-                                related_name="strong_againsts", null=True, blank=True, verbose_name="Силён против")
+                                                 related_name="strong_againsts", null=True, blank=True, verbose_name="Силён против")
 
     def __str__(self):
         if self.title:
@@ -35,7 +33,7 @@ class Pokemon(models.Model):
                                            related_name="next_evolutions",
                                            verbose_name="Из кого эволюционировал")
     elements = models.ManyToManyField(PokemonElement,
-                                related_name="elements", null=True, verbose_name="Стихии")
+                                      related_name="elements", null=True, verbose_name="Стихии")
 
     def __str__(self):
         if self.title_ru:
@@ -57,9 +55,3 @@ class PokemonEntity(models.Model):
     defence = models.IntegerField(null=True, blank=True, verbose_name="Защита")
     stamina = models.IntegerField(
         null=True, blank=True, verbose_name="Выносливость")
-
-
-
-
-
-# your models here

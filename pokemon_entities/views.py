@@ -1,5 +1,4 @@
 import folium
-import json
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
@@ -125,9 +124,9 @@ def show_pokemon(request, pokemon_id):
                 strong_types.append(strong)
 
             element_types.append({
-            'title': element_type.title,
-            'img': element_type.icon.url,
-            'strong_against': strong_types
+                'title': element_type.title,
+                'img': element_type.icon.url,
+                'strong_against': strong_types
             })
 
     try:
