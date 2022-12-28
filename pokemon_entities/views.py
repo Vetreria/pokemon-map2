@@ -93,8 +93,7 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     pokemons = Pokemon.objects.all()
     element_types = []
-    for pokemon in pokemons:
-        requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
+    requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
 
     pokemon_info = {
         "pokemon_id": requested_pokemon.id,
@@ -113,8 +112,8 @@ def show_pokemon(request, pokemon_id):
             "pokemon_id": requested_pokemon.previous_evolution.id,
             "img_url": request.build_absolute_uri(requested_pokemon.previous_evolution.photo.url)
         }
-    if pokemon.elements.all():
-        for element_type in pokemon.elements.all():
+    if requested_pokemon.elements.all():
+        for element_type in requested_pokemon.elements.all():
             strong_types = []
             for strong in element_type.strong_against_type.all():
                 strong_types.append(strong)
