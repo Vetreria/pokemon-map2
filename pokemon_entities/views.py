@@ -31,7 +31,8 @@ def add_pokemon(folium_map, lat, lon, html, image_url=DEFAULT_IMAGE_URL):
 
 
 def show_all_pokemons(request):
-    pokemon_locations = PokemonEntity.objects.filter(appeared_at__lte=localtime(), disappeared_at__gte=localtime())
+    pokemon_locations = PokemonEntity.objects.filter(
+        appeared_at__lte=localtime(), disappeared_at__gte=localtime())
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for pokemon_location in pokemon_locations:
         html = (f"""
@@ -68,11 +69,11 @@ def show_all_pokemons(request):
 </table>
 """)
         add_pokemon(
-                folium_map, pokemon_location.lat,
-                pokemon_location.lon,
-                html,
-                request.build_absolute_uri(pokemon_location.pokemon.photo.url)
-            )
+            folium_map, pokemon_location.lat,
+            pokemon_location.lon,
+            html,
+            request.build_absolute_uri(pokemon_location.pokemon.photo.url)
+        )
 
     pokemons_on_page = []
     pokemons = Pokemon.objects.all()
@@ -124,14 +125,13 @@ def show_pokemon(request, pokemon_id):
                 'strong_against': strong_types
             })
 
-
     next_evolution = requested_pokemon.next_evolutions.first()
     if next_evolution:
         pokemon_info["next_evolution"] = {
-                "title_ru": next_evolution.title_ru,
-                "pokemon_id": next_evolution.id,
-                "img_url": request.build_absolute_uri(next_evolution.photo.url)
-            }
+            "title_ru": next_evolution.title_ru,
+            "pokemon_id": next_evolution.id,
+            "img_url": request.build_absolute_uri(next_evolution.photo.url)
+        }
     html = (f"""            
     <p>{requested_pokemon.title_ru}</p>
     """)
@@ -144,9 +144,6 @@ def show_pokemon(request, pokemon_id):
             html,
             request.build_absolute_uri(pokemon_entity.pokemon.photo.url)
         )
-
-
-
 
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(), 'pokemon': pokemon_info

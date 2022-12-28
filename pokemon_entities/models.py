@@ -5,7 +5,7 @@ class PokemonElement(models.Model):
     icon = models.ImageField(
         upload_to='images', null=True, blank=True, verbose_name="Иконка")
     title = models.CharField(
-        max_length=200, blank=True, verbose_name="Название по-русски")
+        max_length=200, verbose_name="Название по-русски")
     strong_against_type = models.ManyToManyField("self",
                                                  related_name="strong_againsts", null=True, blank=True, verbose_name="Силён против")
 
@@ -17,7 +17,7 @@ class PokemonElement(models.Model):
 
 class Pokemon(models.Model):
     title_ru = models.CharField(
-        max_length=200, blank=True, verbose_name="Название по-русски")
+        max_length=200, verbose_name="Название по-русски")
     title_en = models.CharField(
         max_length=200, blank=True, verbose_name="Название по-английски")
     title_jp = models.CharField(
@@ -36,8 +36,7 @@ class Pokemon(models.Model):
                                       related_name="elements", null=True, verbose_name="Стихии")
 
     def __str__(self):
-        if self.title_ru:
-            return self.title_ru
+        return self.title_ru
 
 
 class PokemonEntity(models.Model):
